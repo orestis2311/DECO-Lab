@@ -1,0 +1,134 @@
+/* src/components/RecentActivities/RecentActivities.css */
+
+.recent-activities-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  width: 100%;
+}
+
+.activities-list-card {
+  background: #1a1a1a;
+  border-radius: 8px;
+  padding: 20px;
+  color: white;
+}
+
+.activities-list-card h2 {
+  margin: 0 0 8px 0;
+  font-size: 24px;
+}
+
+.hint {
+  margin: 0 0 20px 0;
+  color: #999;
+  font-size: 13px;
+  font-style: italic;
+}
+
+.placeholder-box {
+  background: #2a2a2a;
+  border-radius: 6px;
+  padding: 40px;
+  text-align: center;
+  color: #999;
+}
+
+.activities-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.activities-table thead {
+  background: #2a2a2a;
+}
+
+.activities-table th {
+  padding: 12px 8px;
+  text-align: left;
+  font-weight: 600;
+  border-bottom: 2px solid #3a3a3a;
+}
+
+.activities-table td {
+  padding: 12px 8px;
+  border-bottom: 1px solid #2a2a2a;
+}
+
+.activity-row {
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.activity-row:hover {
+  background: #2a2a2a;
+}
+
+.activity-row.selected {
+  background: #2a5a8a;
+}
+
+.activity-detail-card {
+  background: #1a1a1a;
+  border-radius: 8px;
+  padding: 20px;
+  color: white;
+}
+
+.activity-detail-card h3 {
+  margin: 0 0 8px 0;
+  font-size: 22px;
+}
+
+.sub {
+  margin: 0 0 20px 0;
+  color: #999;
+  font-size: 14px;
+}
+
+.mini-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+  padding: 16px;
+  background: #2a2a2a;
+  border-radius: 6px;
+}
+
+.mini-summary div {
+  font-size: 14px;
+}
+
+.mini-summary strong {
+  display: block;
+  color: #999;
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+
+.map-wrapper {
+  margin-bottom: 24px;
+}
+
+.ttl-wrapper {
+  margin-top: 24px;
+}
+
+.ttl-wrapper h4 {
+  margin: 0 0 12px 0;
+  font-size: 16px;
+  color: #4ade80;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .recent-activities-layout {
+    grid-template-columns: 1fr;
+  }
+  
+  .mini-summary {
+    grid-template-columns: 1fr;
+  }
+}

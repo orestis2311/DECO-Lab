@@ -1,0 +1,220 @@
+.app-shell {
+  max-width: 1100px;   
+  margin: 24px auto;
+  padding: 0 16px;
+}
+
+.top-grid {
+  display: grid;
+  grid-template-columns: 360px 1fr; /* uploader left and data right */
+  gap: 20px;
+  align-items: start;
+  margin-bottom: 20px;
+}
+
+/* src/LoginBox.css */
+
+.failedLogin-container {
+  width: 260px;
+  padding: 20px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
+  margin: 60px auto;
+  text-align: center;
+}
+
+.failedLogin-Text {
+  font-size: 18px;
+  margin-bottom: 20px;
+}
+
+.failedLogin-btn{
+  padding: 10px 20px;
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.login-button:hover {
+  background: #1452d7;
+}
+
+.logout-btn {
+  position: absolute;      /* stays in the same spot even when scrolling */
+  top: 15px;            /* distance from top */
+  right: 20px;          /* distance from right */
+  padding: 10px 20px;
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  z-index: 1000;
+}
+
+.logout-btn:hover {
+  background: #1d58da;
+}
+
+/* ===== Insights Page Layout (IMPROVED) ===== */
+.insights-container {
+  max-width: 1400px;
+  margin: 0 auto 24px;
+  padding: 0 16px;
+  display: grid;
+  grid-template-columns: 420px 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+.left-col { 
+  position: sticky; 
+  top: 16px; 
+  align-self: start; 
+}
+
+.right-col { 
+  min-width: 0; 
+}
+
+.card {
+  background: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+}
+
+.card-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0 0 16px 0;
+  color: #ffffff;
+}
+
+.hint {
+  color: #888;
+  font-size: 13px;
+  margin-top: 12px;
+  text-align: center;
+  font-style: italic;
+}
+
+/* Detail panel */
+.detail-header { 
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #333;
+}
+
+.detail-header .card-title {
+  color: #ffffff;
+  background: transparent;
+}
+
+.detail-meta {
+  color: #888;
+  font-size: 13px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 6px;
+}
+
+.map-wrap {
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #333;
+  margin-top: 16px;
+  margin-bottom: 16px;
+}
+
+.map-wrap .leaflet-container { 
+  min-height: 380px; 
+}
+
+.ttl-wrap { 
+  margin-top: 16px;
+  margin-bottom: 24px;
+}
+
+/* RecentActivities polish */
+.recent-activities-list { 
+  max-height: calc(100vh - 200px); 
+  overflow-y: auto;
+  overflow-x: hidden;
+  margin-top: 12px;
+}
+
+.activity-item { 
+  transition: all 0.2s ease;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  cursor: pointer;
+}
+
+.activity-item:hover { 
+  background: #242424;
+  transform: translateX(2px);
+}
+
+.activity-item.selected { 
+  background: #242424;
+  border-color: #2563eb; 
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.3);
+}
+
+/* Top navigation buttons */
+.top-mini-nav {
+  display: flex;
+  gap: 12px;
+  margin: 16px 0 24px 0;
+  padding-left: 16px;
+}
+
+.top-mini-nav button {
+  padding: 10px 20px;
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.top-mini-nav button:hover {
+  background: #1d58da;
+}
+
+/* Dashboard section spacing */
+.card h2.card-title:not(:first-child) {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid #333;
+}
+
+/* Scrollbar styling for activities list */
+.recent-activities-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.recent-activities-list::-webkit-scrollbar-track {
+  background: #1a1a1a;
+  border-radius: 4px;
+}
+
+.recent-activities-list::-webkit-scrollbar-thumb {
+  background: #444;
+  border-radius: 4px;
+}
+
+.recent-activities-list::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}

@@ -1,0 +1,74 @@
+/* Card */
+.td-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.06);
+}
+
+/* Header */
+.td-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid #eee;
+}
+
+.td-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.td-code-icon {
+  width: 20px;
+  height: 20px;
+  fill: #17c53c; 
+}
+
+/* Buttons */
+.td-actions { display: flex; gap: 8px; }
+.td-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  font-size: 14px;
+  cursor: pointer;
+  text-decoration: none;
+}
+.td-primary { background: #11c88b; color: #fff; }
+.td-primary:hover { filter: brightness(0.95); }
+.td-secondary {
+  background: #f9fafb;
+  border-color: #e5e7eb;
+  color: #111827;
+}
+.td-secondary:disabled { opacity: .5; cursor: not-allowed; }
+
+/* Black code area */
+.td-box {
+  background: #000;
+  border-radius: 0 0 12px 12px;
+  min-height: 260px;
+  max-height: 50vh;   
+  overflow: auto;     /* vertical and horizontal scrollbars */
+}
+/*.td-empty { /* pure black when empty */ 
+
+.td-loading { color: #fff; font-size: 14px; padding: 16px; }
+
+.td-code {
+  margin: 0;
+  padding: 16px;
+  color: #00ff90;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  white-space: pre;  
+}
