@@ -4,7 +4,7 @@ import cloudUpload from "../../assets/cloudUpload.png";
 import PodStorage from "../../services/PodStorage";
 import "./fileUpload.css";
 
-const FileUpload = ({ onConverted, onBusyChange, onTurtleReady, onMapData, onPodError, podUrl, webId, solidFetch }) => {
+const FileUpload = ({ onConverted, onBusyChange, onTurtleReady, onMapData, onPodError,onPodSuccess, podUrl, webId, solidFetch }) => {
   const inputRef = useRef(null);
   const [file, setFile] = useState(null);
   const [fileName, setFileName] = useState("");
@@ -177,6 +177,11 @@ const FileUpload = ({ onConverted, onBusyChange, onTurtleReady, onMapData, onPod
       setHasUploadedToPod(true);
       setPodUploadStatus(`✓ Uploaded to Pod: ${result.filename}`);
       console.log('Successfully uploaded to Pod:', result);
+
+      // notify parent that upload to Pod succeeded  ✅
+    if (onPodSuccess) {
+      onPodSuccess({ url: result.url, filename: result.filename, metadata });
+    }
 
       // Notify parent to refresh activity list
       if (onTurtleReady) {
