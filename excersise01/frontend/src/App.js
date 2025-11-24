@@ -9,9 +9,10 @@ import Login from "./components/loginComponent/login";
 import PodStorage from "./services/PodStorage";
 import RecentActivities from "./components/RecentActivities/RecentActivities";
 import Dashboard from "./components/Dashboard/Dashboard";
+// Friends page
+import FriendsPanel from "./components/FriendsPanel/FriendsPanel";
 import { logout } from "@inrupt/solid-client-authn-browser";
 import { addFriend, getFriends } from "./services/Friends";
-import FriendsPanel from "./components/FriendsPanel/FriendsPanel";
 
 import {
   handleIncomingRedirect,
@@ -154,11 +155,23 @@ export default function App() {
         <div>
           {/* Navigation */}
           <div className="top-mini-nav" style={{ display: "flex", gap: 8, margin: "8px 0" }}>
-            <button onClick={() => (window.location.hash = "#/upload")}>
+            <button
+              onClick={() => (window.location.hash = "#/upload")}
+              className={route === "#/upload" || route === "" ? "active" : ""}
+            >
               Upload
             </button>
-            <button onClick={() => (window.location.hash = "#/insights")}>
+            <button
+              onClick={() => (window.location.hash = "#/insights")}
+              className={route === "#/insights" ? "active" : ""}
+            >
               Insights
+            </button>
+            <button
+              onClick={() => (window.location.hash = "#/friends")}
+              className={route === "#/friends" ? "active" : ""}
+            >
+              Friends
             </button>
             <button onClick={handleLogout} className="logout-btn" style={{ marginLeft: "auto" }}>
               Logout
@@ -166,7 +179,7 @@ export default function App() {
           </div>
 
           {/* UPLOAD PAGE */}
-          <div style={{ display: route === "#/insights" ? "none" : "block" }}>
+          <div style={{ display: route === "#/upload" || route === "" || !route.startsWith("#/") ? "block" : "none" }}>
             <div className="app-shell">
               <div className="top-grid">
                 <div className="left">
@@ -187,8 +200,12 @@ export default function App() {
                     solidFetch={solidFetch}
                     onPodError={(error) => console.error("Pod upload error:", error)}
                     onPodSuccess={() => {
-                      console.log("File uploaded to Pod - triggering insights refresh");
-                      setInsightsRefreshKey(prev => prev + 1);
+                      console.log("[App] File uploaded to Pod - triggering insights refresh");
+                      setInsightsRefreshKey(prev => {
+                        const newValue = prev + 1;
+                        console.log("[App] insightsRefreshKey updated:", prev, "->", newValue);
+                        return newValue;
+                      });
                     }}
                   />
                 </div>
@@ -233,28 +250,30 @@ export default function App() {
 
             {/* Dashboard at top */}
             <div style={{ padding: "20px", maxWidth: "1600px", margin: "0 auto" }}>
-              <Dashboard 
-                podUrl={podUrl} 
+              <Dashboard
+                podUrl={podUrl}
                 solidFetch={solidFetch}
                 refreshKey={insightsRefreshKey}
               />
             </div>
 
-            <div style={{ padding: "0 20px 20px 20px", maxWidth: "1600px", margin: "0 auto" }}>
+            {/* Recent Activities full width below */}
+            <div style={{ padding: "20px", maxWidth: "1600px", margin: "0 auto" }}>
+              <RecentActivities
+                podUrl={podUrl}
+                solidFetch={solidFetch}
+                refreshKey={insightsRefreshKey}
+              />
+            </div>
+          </div>
+
+          {/* FRIENDS PAGE */}
+          <div style={{ display: route === "#/friends" ? "block" : "none" }}>
+            <div style={{ padding: "20px", maxWidth: "1600px", margin: "0 auto" }}>
               <FriendsPanel
                 webId={webId}
                 podUrl={podUrl}
                 solidFetch={solidFetch}
-              />
-            </div>
-
-
-            {/* Recent Activities full width below */}
-            <div style={{ padding: "20px", maxWidth: "1600px", margin: "0 auto" }}>
-              <RecentActivities 
-                podUrl={podUrl} 
-                solidFetch={solidFetch}
-                refreshKey={insightsRefreshKey}
               />
             </div>
           </div>
