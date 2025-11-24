@@ -1,4 +1,4 @@
-// App.js
+// App.js - Updated with Access Control Integration
 import React, { useEffect, useState } from "react";
 import "./App.css";
 import FileUpload from "./components/fileUploadComponent/fileUpload";
@@ -9,17 +9,19 @@ import Login from "./components/loginComponent/login";
 import PodStorage from "./services/PodStorage";
 import RecentActivities from "./components/RecentActivities/RecentActivities";
 import Dashboard from "./components/Dashboard/Dashboard";
-// Friends page
 import FriendsPanel from "./components/FriendsPanel/FriendsPanel";
 import { logout } from "@inrupt/solid-client-authn-browser";
 import { addFriend, getFriends } from "./services/Friends";
+// ✅ NEW: Import public access configuration
+import { 
+  configureAllPublicData, 
+  displayAccessSummary 
+} from "./services/PublicAccessSetup";
 
 import {
   handleIncomingRedirect,
   getDefaultSession,
 } from "@inrupt/solid-client-authn-browser";
-
-
 
 export default function App() {
   const [ttlText, setTtlText] = useState("");
@@ -39,6 +41,9 @@ export default function App() {
   const [podUrl, setPodUrl] = useState(null);
   const [webId, setWebId] = useState(null);
   const [solidFetch, setSolidFetch] = useState(null);
+
+  // ✅ NEW: Track if public access has been configured
+  const [publicAccessConfigured, setPublicAccessConfigured] = useState(false);
 
   // Refresh trigger for insights page
   const [insightsRefreshKey, setInsightsRefreshKey] = useState(0);
@@ -81,7 +86,6 @@ export default function App() {
           const url = await PodStorage.getPodUrl(session.info.webId, session.fetch);
           setPodUrl(url);
           console.log("Pod URL:", url);
-
         } catch (error) {
           console.error("Error getting Pod URL:", error);
         }
@@ -97,15 +101,60 @@ export default function App() {
     handleRedirectAfterLogin();
   }, []);
 
+  // ✅ NEW: Configure public access after successful login
+  useEffect(() => {
+    async function setupPublicAccess() {
+      // Only run if logged in, have pod URL, and haven't configured yet
+      if (
+        logInStatus === "110" && 
+        podUrl && 
+        webId && 
+        solidFetch && 
+        !publicAccessConfigured
+      ) {
+        console.log("\n🔓 Configuring public access for assignment...");
+
+        try {
+          // Configure all public data
+          const results = await configureAllPublicData({
+            podUrl,
+            webId,
+            fetch: solidFetch
+          });
+
+          // Display summary for verification
+          await displayAccessSummary({
+            podUrl,
+            webId,
+            fetch: solidFetch
+          });
+
+          setPublicAccessConfigured(true);
+          console.log("✓ Public access configuration complete!");
+
+          // Check if all succeeded
+          const allSucceeded = results.every(r => r.success);
+          if (!allSucceeded) {
+            console.warn("⚠️ Some resources failed to be made public. Check logs above.");
+          }
+        } catch (error) {
+          console.error("✗ Error configuring public access:", error);
+        }
+      }
+    }
+
+    setupPublicAccess();
+  }, [logInStatus, podUrl, webId, solidFetch, publicAccessConfigured]);
+
   async function handleLogout() {
     try {
       console.log("Logging out from Solid...");
-      await logout(); // ends Solid session for your app
+      await logout();
     } catch (error) {
       console.error("Logout error:", error);
     }
 
-    // ✅ Clear Solid/OIDC leftovers so the app doesn't restore session silently
+    // Clear Solid/OIDC leftovers
     const keysToRemove = Object.keys(localStorage).filter(
       (k) =>
         k.startsWith("oidc.") ||
@@ -116,21 +165,21 @@ export default function App() {
     keysToRemove.forEach((k) => localStorage.removeItem(k));
     sessionStorage.clear();
 
-    // ✅ Reset your React state
+    // Reset React state
     resetVariables();
 
-    // ✅ Remove auth params + force clean reload
+    // Remove auth params + force clean reload
     window.history.replaceState({}, document.title, window.location.pathname);
     window.location.hash = "#/upload";
     window.location.reload();
   }
-
 
   function resetVariables() {
     setLogInStatus("000");
     setPodUrl(null);
     setWebId(null);
     setSolidFetch(null);
+    setPublicAccessConfigured(false); // ✅ NEW: Reset public access flag
   }
 
   return (
@@ -153,6 +202,23 @@ export default function App() {
       {/* Logged in successfully */}
       {logInStatus.charAt(1) !== "0" && logInStatus.charAt(0) === "1" && (
         <div>
+          {/* ✅ NEW: Show public access status indicator */}
+          {!publicAccessConfigured && (
+            <div style={{
+              position: 'fixed',
+              top: 10,
+              right: 10,
+              background: '#ffa500',
+              color: 'white',
+              padding: '8px 12px',
+              borderRadius: '4px',
+              fontSize: '12px',
+              zIndex: 9999
+            }}>
+              🔓 Configuring public access...
+            </div>
+          )}
+
           {/* Navigation */}
           <div className="top-mini-nav" style={{ display: "flex", gap: 8, margin: "8px 0" }}>
             <button
@@ -172,6 +238,22 @@ export default function App() {
               className={route === "#/friends" ? "active" : ""}
             >
               Friends
+            </button>
+            {/* ✅ NEW: Debug button to show access summary */}
+            <button
+              onClick={async () => {
+                if (podUrl && webId && solidFetch) {
+                  await displayAccessSummary({
+                    podUrl,
+                    webId,
+                    fetch: solidFetch
+                  });
+                }
+              }}
+              style={{ marginLeft: "8px" }}
+              title="Show access permissions in console"
+            >
+              🔍 Debug Access
             </button>
             <button onClick={handleLogout} className="logout-btn" style={{ marginLeft: "auto" }}>
               Logout
@@ -241,14 +323,11 @@ export default function App() {
           <div
             style={{
               display: route === "#/insights" ? "block" : "none",
-              backgroundColor: "#000000",    // 🔹 black background
-              minHeight: "100vh",            // 🔹 fill full screen height
-              paddingBottom: "20px",         // optional: some bottom space
+              backgroundColor: "#000000",
+              minHeight: "100vh",
+              paddingBottom: "20px",
             }}
           >
-
-
-            {/* Dashboard at top */}
             <div style={{ padding: "20px", maxWidth: "1600px", margin: "0 auto" }}>
               <Dashboard
                 podUrl={podUrl}
@@ -257,7 +336,6 @@ export default function App() {
               />
             </div>
 
-            {/* Recent Activities full width below */}
             <div style={{ padding: "20px", maxWidth: "1600px", margin: "0 auto" }}>
               <RecentActivities
                 podUrl={podUrl}
