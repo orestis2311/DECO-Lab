@@ -1,0 +1,130 @@
+.friends-card {
+  background: #0b0b0b;
+  color: #e5e7eb;
+  border: 1px solid #1f2937;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 20px;
+  width: 90%;
+  align-items: center;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+}
+
+.friends-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.container {
+  margin: 0 auto;     /* horizontally center */
+  padding: 20px;      /* optional spacing from edges */
+}
+.friends-add {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.friends-add input {
+  flex: 1;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #374151;
+  background: #111827;
+  color: #e5e7eb;
+}
+
+.friends-add button,
+.friends-header button,
+.small-btn {
+  background: #111827;
+  color: #e5e7eb;
+  border: 1px solid #374151;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.friends-add button:hover,
+.friends-header button:hover,
+.small-btn:hover {
+  background: #1f2937;
+}
+
+.friends-msg {
+  background: #0f172a;
+  border: 1px solid #334155;
+  padding: 8px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  font-size: 0.9rem;
+}
+
+.friends-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.friend-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto auto;
+  gap: 8px;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #1f2937;
+}
+
+.friend-id {
+  font-size: 0.9rem;
+  word-break: break-all;
+}
+
+.badge {
+  font-size: 0.85rem;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.badge.ok {
+  background: #052e1a;
+  border-color: #10b981;
+  color: #a7f3d0;
+}
+
+.badge.warn {
+  background: #2a1606;
+  border-color: #f59e0b;
+  color: #fde68a;
+}
+
+.friend-reason {
+  grid-column: 1 / -1;
+  font-size: 0.8rem;
+  color: #9ca3af;
+  margin-left: 4px;
+}
+
+.friend-empty {
+  padding: 8px 0;
+  color: #9ca3af;
+}
+
+
+.block-title{
+    align-items: center;
+}
+
+
+.friends-hint {
+  margin-top: 12px;
+  font-size: 0.85rem;
+  color: #9ca3af;
+}
+
+.friends-hint code {
+  color: #e5e7eb;
+}

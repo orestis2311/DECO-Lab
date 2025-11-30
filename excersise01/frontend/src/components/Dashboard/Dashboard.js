@@ -1,26 +1,40 @@
+//B-READ
+
 // src/components/Dashboard/Dashboard.js
 import React, { useEffect, useMemo, useState } from "react";
 import "../Dashboard/Dashboard.css";
 import { listActivitiesFromIndex } from "../../services/Activities";
 
 export default function Dashboard({ podUrl, solidFetch, refreshKey }) {
-  console.log("[Dashboard props]", { podUrl, hasFetch: !!solidFetch, refreshKey });
 
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // -------- helpers --------
-  function sumMetrics(list) {
-    const distance = list.reduce((s, a) => s + (a.distanceMeters || 0), 0);
-    const duration = list.reduce((s, a) => s + (a.durationSeconds || 0), 0);
-    return { distanceKm: (distance / 1000).toFixed(2), durationMin: (duration / 60).toFixed(1) };
-  }
-
   function countByType(list) {
+
+        
+    //manual code
+    /*
+    let acc = {}
+    for (let i = 0; i<list.length; i++){
+
+      let count = acc[list[i].type] || 0;
+      acc[list[i].type] = count+1;
+
+
+
+    }
+    return acc;
+    */
+    
+
     return list.reduce((acc, a) => { acc[a.type] = (acc[a.type] || 0) + 1; return acc; }, {});
+
+
+    
   }
 
-  // -------- load data --------
+  //This is where activities is fetched
   useEffect(() => {
     let alive = true;
     (async () => {
@@ -34,10 +48,16 @@ export default function Dashboard({ podUrl, solidFetch, refreshKey }) {
       }
     })();
     return () => { alive = false; };
+
+    //if refresh key changes, data must be reloaded(for example when something new is uploaded)
+    //podURL because if for example the user logs in to another account
+    //solidFetch because if it changes the old fetch may no longer be authorised so dont show its data etc
   }, [podUrl, solidFetch, refreshKey]);
 
-  // -------- compute stats --------
+  //statistics calculation
   const stats = useMemo(() => {
+
+    //if null or no activities then everything is 0
     if (!activities.length) {
       return {
         totalWorkouts: 0,
@@ -48,19 +68,35 @@ export default function Dashboard({ podUrl, solidFetch, refreshKey }) {
       };
     }
 
+
     const totalWorkouts = activities.length;
+
+    //calculating values manually
+
+    //let toalDistkm = 0
+    let totalDur = 0
+    let totalHeartbeats = 0
+    for (let i = 0; i<activities.length; i++){
+      //totalDistKm += activities[i].distanceMeters/1000.0;
+      totalDur += (activities[i].durationSeconds||0)/60.0;
+      totalHeartbeats += (activities[i].avgHeartRate||0) * (activities[i].durationSeconds || 0);  
+    }
+    const avgHeartRateOverallFixed = (totalHeartbeats/(totalDur*60)).toFixed(1);   
     const totalDistanceKm = activities.reduce((sum, a) => sum + (a.distanceMeters || 0) / 1000, 0).toFixed(2);
     const totalDurationMin = (activities.reduce((s, a) => s + (a.durationSeconds || 0), 0) / 60).toFixed(1);
+    const avgHeartRateOverall = avgHeartRateOverallFixed;
+    /*
     const avgHeartRateOverall = (
       activities.reduce((s, a) => s + (a.avgHeartRate || 0), 0) / Math.max(totalWorkouts, 1)
     ).toFixed(1);
+    */
 
     const countsOverall = countByType(activities);
 
     return { totalWorkouts, totalDistanceKm, totalDurationMin, avgHeartRateOverall, countsOverall };
   }, [activities]);
 
-  // -------- render --------
+  //html code for the
   return (
     <div className="dashboard-layout">
       <h2>Dashboard</h2>

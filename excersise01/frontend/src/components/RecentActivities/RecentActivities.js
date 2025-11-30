@@ -110,7 +110,6 @@ export default function RecentActivities({ podUrl, solidFetch, refreshKey }) {
       {/* LEFT: list */}
       <div className="activities-list-card">
         <h2>Recent Activities</h2>
-        <p className="hint">Loaded from <code>/public/fitness/index.ttl</code></p>
 
         {loadingList ? (
           <div className="placeholder-box"><p>Loading…</p></div>

@@ -28,7 +28,9 @@ const FileUpload = ({ onConverted, onBusyChange, onTurtleReady, onMapData, onPod
       "gis"
     );
 
+    //convert iterator to array
     const matches = [...ttlText.matchAll(sensorDataPattern)];
+
     if (matches.length > 0) {
       const sensorData = matches
         .map((m) => ({
@@ -72,7 +74,11 @@ const FileUpload = ({ onConverted, onBusyChange, onTurtleReady, onMapData, onPod
     return points;
   };
 
+
+
   const extractStatsFromTTL = (ttlText) => {
+
+    
     const durMatch = /fit:duration\s+"(PT[^"]+)"(?:\^\^xsd:duration)?/i.exec(ttlText);
     const avgHRMatch = new RegExp(
       String.raw`fit:averageHeartRate\s+"${numLiteral}"${optType("decimal|float|integer")}`,

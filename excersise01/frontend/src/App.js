@@ -10,9 +10,13 @@ import PodStorage from "./services/PodStorage";
 import RecentActivities from "./components/RecentActivities/RecentActivities";
 import Dashboard from "./components/Dashboard/Dashboard";
 // Friends page
-import FriendsPanel from "./components/FriendsPanel/FriendsPanel";
+import NewFriendsPanel from "./components/newFriendsPanel/NewFriendsPanel";
+import FriendActivitiesDashboard from "./components/FriendActivitiesDashboard/FriendActivitiesDashboard";
 import { logout } from "@inrupt/solid-client-authn-browser";
 import { addFriend, getFriends } from "./services/Friends";
+
+
+
 
 import {
   handleIncomingRedirect,
@@ -167,12 +171,15 @@ export default function App() {
             >
               Insights
             </button>
+
             <button
               onClick={() => (window.location.hash = "#/friends")}
-              className={route === "#/friends" ? "active" : ""}
+              className={route.startsWith("#/friends") ? "active" : ""}
             >
-              Friends
+            Friends
             </button>
+            
+            
             <button onClick={handleLogout} className="logout-btn" style={{ marginLeft: "auto" }}>
               Logout
             </button>
@@ -267,15 +274,17 @@ export default function App() {
             </div>
           </div>
 
-          {/* FRIENDS PAGE */}
-          <div style={{ display: route === "#/friends" ? "block" : "none" }}>
-            <div style={{ padding: "20px", maxWidth: "1600px", margin: "0 auto" }}>
-              <FriendsPanel
+
+          {/*friends TAB*/}
+          <div style = {{display:route.startsWith("#/friends") ? "block" : "none"}}>
+            <NewFriendsPanel           
                 webId={webId}
                 podUrl={podUrl}
                 solidFetch={solidFetch}
-              />
-            </div>
+                refreshKey={insightsRefreshKey}
+
+            />
+          
           </div>
         </div>
       )}
