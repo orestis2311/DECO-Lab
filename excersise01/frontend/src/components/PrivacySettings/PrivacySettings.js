@@ -14,6 +14,7 @@ export default function PrivacySettings({ podUrl, solidFetch }) {
   const [updating, setUpdating] = useState(false);
   const [error, setError] = useState(null);
   const [friends, setFriends] = useState([]);
+  const [progress, setProgress] = useState(null);
 
   // Load friends list and check current visibility status
   useEffect(() => {
@@ -51,6 +52,7 @@ export default function PrivacySettings({ podUrl, solidFetch }) {
     try {
       setUpdating(true);
       setError(null);
+      setProgress(null);
 
       if (friends.length === 0) {
         setError("You have no friends added yet. Add friends first to share your data.");
@@ -58,12 +60,17 @@ export default function PrivacySettings({ podUrl, solidFetch }) {
         return;
       }
 
+      const onProgress = (info) => {
+        setProgress(info);
+      };
+
       if (isPublic) {
         // Switch to private (revoke access from friends)
         const result = await makeFitnessDataPrivate({
           podUrl,
           friendsList: friends,
           fetch: solidFetch,
+          onProgress,
         });
         setIsPublic(false);
         console.log(`[PrivacySettings] Data is now private (revoked from ${result.revokedFrom} friends)`);
@@ -73,6 +80,7 @@ export default function PrivacySettings({ podUrl, solidFetch }) {
           podUrl,
           friendsList: friends,
           fetch: solidFetch,
+          onProgress,
         });
         setIsPublic(true);
         console.log(`[PrivacySettings] Data is now public (shared with ${result.sharedWith} friends)`);
@@ -82,6 +90,7 @@ export default function PrivacySettings({ podUrl, solidFetch }) {
       setError("Failed to update visibility settings. Please try again.");
     } finally {
       setUpdating(false);
+      setProgress(null);
     }
   };
 
@@ -124,12 +133,28 @@ export default function PrivacySettings({ podUrl, solidFetch }) {
           title={friends.length === 0 ? "Add friends first to share your data" : ""}
         >
           {updating
-            ? "Updating..."
+            ? progress
+              ? `Processing ${progress.current}/${progress.total} friends...`
+              : "Updating..."
             : isPublic
             ? "Stop Sharing with Friends"
             : "Share with Friends"}
         </button>
       </div>
+
+      {updating && progress && (
+        <div className="progress-info">
+          <div className="progress-bar-container">
+            <div
+              className="progress-bar-fill"
+              style={{ width: `${(progress.current / progress.total) * 100}%` }}
+            />
+          </div>
+          <div className="progress-text">
+            Processing friend {progress.current} of {progress.total}
+          </div>
+        </div>
+      )}
 
       {error && (
         <div className="privacy-error">
