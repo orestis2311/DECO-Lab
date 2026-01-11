@@ -6,8 +6,6 @@ import {
   isMutualFriend,
   checkFriendActivitiesAccess,
 } from "../../services/Friends";
-import { grantFitnessReadToFriend } from "../../services/Permissions";
-
 
 export default function FriendsPanel({ webId, podUrl, solidFetch }) {
   const [input, setInput] = useState("");
@@ -60,15 +58,9 @@ export default function FriendsPanel({ webId, podUrl, solidFetch }) {
         fetch: solidFetch,
       });
 
-      await grantFitnessReadToFriend({
-        podUrl,
-        friendWebId: addedId,
-        fetch: solidFetch,
-      });
-
       setInput("");
       await refreshFriends();
-      setMsg("Friend added + access granted. Ask them to add you back.");
+      setMsg("Friend added! Use Privacy Settings in Dashboard to control access. Ask them to add you back.");
     } catch (e) {
       setMsg(e.message);
     } finally {
