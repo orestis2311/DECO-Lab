@@ -17,34 +17,32 @@ export default function PrivacySettings({ podUrl, solidFetch }) {
   const [progress, setProgress] = useState(null);
 
   // Load friends list and check current visibility status
+  const loadStatus = async () => {
+    try {
+      if (!podUrl || !solidFetch) return;
+      setLoading(true);
+
+      // Load friends list
+      const friendsList = await getFriends({ podUrl, fetch: solidFetch });
+      setFriends(friendsList);
+
+      // Check if data is shared with friends
+      const publicStatus = await isFitnessDataPublic({
+        podUrl,
+        friendsList,
+        fetch: solidFetch,
+      });
+      setIsPublic(publicStatus);
+    } catch (e) {
+      console.error("[PrivacySettings] Error checking visibility:", e);
+      setError("Failed to check current visibility status");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    let alive = true;
-    (async () => {
-      try {
-        if (!podUrl || !solidFetch) return;
-        setLoading(true);
-
-        // Load friends list
-        const friendsList = await getFriends({ podUrl, fetch: solidFetch });
-        if (alive) setFriends(friendsList);
-
-        // Check if data is shared with friends
-        const publicStatus = await isFitnessDataPublic({
-          podUrl,
-          friendsList,
-          fetch: solidFetch,
-        });
-        if (alive) setIsPublic(publicStatus);
-      } catch (e) {
-        console.error("[PrivacySettings] Error checking visibility:", e);
-        if (alive) setError("Failed to check current visibility status");
-      } finally {
-        if (alive) setLoading(false);
-      }
-    })();
-    return () => {
-      alive = false;
-    };
+    loadStatus();
   }, [podUrl, solidFetch]);
 
   // Toggle visibility handler (friend-based sharing)
@@ -72,7 +70,6 @@ export default function PrivacySettings({ podUrl, solidFetch }) {
           fetch: solidFetch,
           onProgress,
         });
-        setIsPublic(false);
         console.log(`[PrivacySettings] Data is now private (revoked from ${result.revokedFrom} friends)`);
       } else {
         // Switch to public (grant access to friends)
@@ -82,9 +79,11 @@ export default function PrivacySettings({ podUrl, solidFetch }) {
           fetch: solidFetch,
           onProgress,
         });
-        setIsPublic(true);
         console.log(`[PrivacySettings] Data is now public (shared with ${result.sharedWith} friends)`);
       }
+
+      // Refresh status from server to confirm changes
+      await loadStatus();
     } catch (e) {
       console.error("[PrivacySettings] Error toggling visibility:", e);
       setError("Failed to update visibility settings. Please try again.");
@@ -105,7 +104,17 @@ export default function PrivacySettings({ podUrl, solidFetch }) {
 
   return (
     <div className="privacy-settings">
-      <h3>Privacy Settings</h3>
+      <div className="privacy-header">
+        <h3>Privacy Settings</h3>
+        <button
+          className="refresh-button"
+          onClick={loadStatus}
+          disabled={loading || updating}
+          title="Refresh privacy status"
+        >
+          🔄 Refresh
+        </button>
+      </div>
 
       <div className="privacy-control">
         <div className="privacy-info">
