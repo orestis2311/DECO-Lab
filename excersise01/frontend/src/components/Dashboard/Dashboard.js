@@ -4,6 +4,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import "../Dashboard/Dashboard.css";
 import { listActivitiesFromIndex } from "../../services/Activities";
+import PrivacySettings from "../PrivacySettings/PrivacySettings";
 
 export default function Dashboard({ podUrl, solidFetch, refreshKey }) {
 
@@ -100,6 +101,9 @@ export default function Dashboard({ podUrl, solidFetch, refreshKey }) {
   return (
     <div className="dashboard-layout">
       <h2>Dashboard</h2>
+
+      {/* Privacy Settings */}
+      <PrivacySettings podUrl={podUrl} solidFetch={solidFetch} />
 
       {loading ? (
         <div className="stat-card">Loading…</div>
