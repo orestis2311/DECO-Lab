@@ -25,8 +25,8 @@ const FOAF = 'http://xmlns.com/foaf/0.1/';
 
 class PodStorageService {
   constructor() {
-    this.fitnessPath = '/public/fitness/';
-    this.indexPath = '/public/fitness/index.ttl';
+    this.fitnessPath = '/private/fitness/';
+    this.indexPath = '/private/fitness/index.ttl';
   }
 
   /**
@@ -91,17 +91,24 @@ class PodStorageService {
    * Ensure the fitness directory exists
    */
   async ensureFitnessDirectory(podUrl, fetch) {
-  // Ensure /public/fitness/ exists
-  const publicUrl = `${podUrl}/public/`;
-  await this.ensureContainer(publicUrl, fetch);
+    // First ensure /private/ exists
+    const privateUrl = `${podUrl}/private/`;
+    const privateExists = await this.ensureContainer(privateUrl, fetch);
 
-  const fitnessUrl = `${podUrl}${this.fitnessPath}`;
-  await this.ensureContainer(fitnessUrl, fetch);
+    if (!privateExists) {
+      throw new Error('Could not access or create /private/ directory. Please check your Pod permissions.');
+    }
 
-  console.log('Fitness PUBLIC directory ready:', fitnessUrl);
-}
+    // Then ensure /private/fitness/ exists
+    const fitnessUrl = `${podUrl}${this.fitnessPath}`;
+    const fitnessExists = await this.ensureContainer(fitnessUrl, fetch);
 
+    if (!fitnessExists) {
+      throw new Error('Could not create /private/fitness/ directory. Please check your Pod permissions.');
+    }
 
+    console.log('Fitness directory ready:', fitnessUrl);
+  }
 
   /**
    * Generate filename for activity with counter

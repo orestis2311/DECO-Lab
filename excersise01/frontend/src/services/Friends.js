@@ -10,10 +10,10 @@ import {
   saveSolidDatasetAt,
   getPodUrlAll,
   createContainerAt,
-  getFile,
+  getFile, // ✅ for access check
 } from "@inrupt/solid-client";
 import { RDF } from "@inrupt/vocab-common-rdf";
-import { buildIndexUrl } from "./Activities";
+import { buildIndexUrl } from "./Activities"; // ✅ reuse your index path builder
 
 const FOAF = "http://xmlns.com/foaf/0.1/";
 const FRIENDS_PUBLIC_PATH = "/public/fitness/friends.ttl";

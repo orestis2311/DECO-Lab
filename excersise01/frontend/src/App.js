@@ -12,8 +12,11 @@ import Dashboard from "./components/Dashboard/Dashboard";
 // Friends page
 import NewFriendsPanel from "./components/newFriendsPanel/NewFriendsPanel";
 import FriendActivitiesDashboard from "./components/FriendActivitiesDashboard/FriendActivitiesDashboard";
+// Achievements page
+import Achievements from "./components/AchievementsTab/Achievements";
 import { logout } from "@inrupt/solid-client-authn-browser";
 import { addFriend, getFriends } from "./services/Friends";
+import './services/NotificationStyles.css';
 
 
 
@@ -178,8 +181,15 @@ export default function App() {
             >
             Friends
             </button>
-            
-            
+
+            <button
+              onClick={() => (window.location.hash = "#/achievements")}
+              className={route === "#/achievements" ? "active" : ""}
+            >
+              Achievements
+            </button>
+
+
             <button onClick={handleLogout} className="logout-btn" style={{ marginLeft: "auto" }}>
               Logout
             </button>
@@ -277,14 +287,28 @@ export default function App() {
 
           {/*friends TAB*/}
           <div style = {{display:route.startsWith("#/friends") ? "block" : "none"}}>
-            <NewFriendsPanel           
+            <NewFriendsPanel
                 webId={webId}
                 podUrl={podUrl}
                 solidFetch={solidFetch}
                 refreshKey={insightsRefreshKey}
 
             />
-          
+
+          </div>
+
+          {/* Achievements TAB */}
+          <div style={{
+            display: route === "#/achievements" ? "block" : "none",
+            backgroundColor: "#f8f9fa",
+            minHeight: "100vh"
+          }}>
+            <Achievements
+              podUrl={podUrl}
+              solidFetch={solidFetch}
+              refreshKey={insightsRefreshKey}
+              webId={webId}
+            />
           </div>
         </div>
       )}

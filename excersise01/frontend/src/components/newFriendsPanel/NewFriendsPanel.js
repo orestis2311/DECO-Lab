@@ -10,7 +10,7 @@ import { grantFitnessReadToFriend } from "../../services/Permissions";
 import PodStorage from "../../services/PodStorage";
 import { listActivitiesFromIndex } from "../../services/Activities";
 import RecentActivities from "../RecentActivities/RecentActivities";
-
+import FriendActivitiesDashboard from "../FriendActivitiesDashboard/FriendActivitiesDashboard";
 
 export default function NewFriendsPanel({ webId, podUrl, solidFetch, refreshKey }) {
   const [input, setInput] = useState("");
@@ -364,7 +364,16 @@ return (
               <li className="friend-empty">No confirmed friends.</li>
             )}
           </ul>
+
         </div>
+
+        <FriendActivitiesDashboard webId={webId} podUrl={podUrl} solidFetch={solidFetch}/>
+
+
+
+
+
+
       </>
     )}
 
