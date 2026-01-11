@@ -7,11 +7,6 @@ import {
   isFitnessDataPublic,
 } from "../../services/Permissions";
 import { getFriends } from "../../services/Friends";
-import {
-  diagnoseAccessControl,
-  testAnonymousAccess,
-  makePublicUsingACP,
-} from "../../services/PermissionsDiagnostics";
 
 export default function PrivacySettings({ podUrl, solidFetch }) {
   const [isPublic, setIsPublic] = useState(false);
@@ -19,9 +14,6 @@ export default function PrivacySettings({ podUrl, solidFetch }) {
   const [updating, setUpdating] = useState(false);
   const [error, setError] = useState(null);
   const [friends, setFriends] = useState([]);
-  const [diagnostics, setDiagnostics] = useState(null);
-  const [showDiagnostics, setShowDiagnostics] = useState(false);
-  const [anonymousTest, setAnonymousTest] = useState(null);
 
   // Load friends list and check current visibility status
   useEffect(() => {
@@ -54,40 +46,11 @@ export default function PrivacySettings({ podUrl, solidFetch }) {
     };
   }, [podUrl, solidFetch]);
 
-  // Run diagnostics
-  const handleDiagnostics = async () => {
-    try {
-      setUpdating(true);
-      setError(null);
-      console.log("[PrivacySettings] Running diagnostics...");
-
-      const results = await diagnoseAccessControl({ podUrl, fetch: solidFetch });
-      setDiagnostics(results);
-      setShowDiagnostics(true);
-
-      console.log("[PrivacySettings] Diagnostics complete:", results);
-
-      // Also test anonymous access to container
-      const root = podUrl.trim().replace(/\/+$/, "").replace(/\/(public|private)(\/.*)?$/i, "");
-      const containerUrl = `${root}/private/fitness/`;
-      const anonTest = await testAnonymousAccess(containerUrl);
-      setAnonymousTest(anonTest);
-
-      console.log("[PrivacySettings] Anonymous access test:", anonTest);
-    } catch (e) {
-      console.error("[PrivacySettings] Diagnostics error:", e);
-      setError("Failed to run diagnostics: " + e.message);
-    } finally {
-      setUpdating(false);
-    }
-  };
-
   // Toggle visibility handler (friend-based sharing)
   const handleToggle = async () => {
     try {
       setUpdating(true);
       setError(null);
-      setAnonymousTest(null);
 
       if (friends.length === 0) {
         setError("You have no friends added yet. Add friends first to share your data.");
@@ -171,75 +134,6 @@ export default function PrivacySettings({ podUrl, solidFetch }) {
       {error && (
         <div className="privacy-error">
           {error}
-        </div>
-      )}
-
-      {anonymousTest && (
-        <div className={`privacy-test ${anonymousTest.accessible ? "success" : "warning"}`}>
-          <strong>Anonymous Access Test:</strong>
-          {anonymousTest.accessible ? (
-            <span> ✅ Data is publicly accessible (HTTP {anonymousTest.status})</span>
-          ) : (
-            <span> ❌ Data requires authentication (HTTP {anonymousTest.status || "error"})</span>
-          )}
-          {anonymousTest.requiresAuth && (
-            <div className="test-explanation">
-              Your pod provider requires authentication for all access. Even though permissions
-              are set to "public", anonymous users cannot access the data.
-            </div>
-          )}
-        </div>
-      )}
-
-      <div className="privacy-actions">
-        <button
-          className="diagnostics-button"
-          onClick={handleDiagnostics}
-          disabled={updating}
-        >
-          🔍 Run Diagnostics
-        </button>
-      </div>
-
-      {showDiagnostics && diagnostics && (
-        <div className="diagnostics-results">
-          <h4>Diagnostics Results</h4>
-          <div className="diag-item">
-            <strong>Access Control Type:</strong> {diagnostics.accessControlType}
-          </div>
-          <div className="diag-item">
-            <strong>Container URL:</strong>
-            <code>{diagnostics.containerUrl}</code>
-          </div>
-          <div className="diag-item">
-            <strong>Public Access Status:</strong>
-            {diagnostics.publicAccess ? (
-              <pre>{JSON.stringify(diagnostics.publicAccess, null, 2)}</pre>
-            ) : (
-              <span> Not set or unavailable</span>
-            )}
-          </div>
-          {diagnostics.files.length > 0 && (
-            <div className="diag-item">
-              <strong>Files Found:</strong> {diagnostics.files.length}
-            </div>
-          )}
-          {diagnostics.errors.length > 0 && (
-            <div className="diag-item">
-              <strong>Errors:</strong>
-              <ul>
-                {diagnostics.errors.map((err, i) => (
-                  <li key={i}>{err}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-          <button
-            className="close-diagnostics"
-            onClick={() => setShowDiagnostics(false)}
-          >
-            Close Diagnostics
-          </button>
         </div>
       )}
 
