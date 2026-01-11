@@ -72,7 +72,7 @@ export async function grantFitnessReadToFriend({ podUrl, friendWebId, fetch }) {
  * Grant fitness data access to ALL friends
  * "Public" in this context means "visible to friends"
  */
-export async function makeFitnessDataPublic({ podUrl, friendsList, fetch }) {
+export async function makeFitnessDataPublic({ podUrl, friendsList, fetch, onProgress }) {
   const root = rootPodUrl(podUrl);
   const containerUrl = `${root}/private/fitness/`;
 
@@ -85,7 +85,13 @@ export async function makeFitnessDataPublic({ podUrl, friendsList, fetch }) {
   let successCount = 0;
 
   // Grant access to each friend
-  for (const friendWebId of friendsList) {
+  for (let i = 0; i < friendsList.length; i++) {
+    const friendWebId = friendsList[i];
+
+    if (onProgress) {
+      onProgress({ current: i + 1, total: friendsList.length, friendWebId });
+    }
+
     try {
       const agents = agentVariants(friendWebId);
 
@@ -119,7 +125,7 @@ export async function makeFitnessDataPublic({ podUrl, friendsList, fetch }) {
       }
 
       successCount++;
-      console.log(`[Permissions] Shared with friend: ${friendWebId}`);
+      console.log(`[Permissions] Shared with friend ${i + 1}/${friendsList.length}: ${friendWebId}`);
     } catch (e) {
       console.error(`[Permissions] Failed to share with ${friendWebId}:`, e);
     }
@@ -133,7 +139,7 @@ export async function makeFitnessDataPublic({ podUrl, friendsList, fetch }) {
  * Revoke fitness data access from ALL friends
  * "Private" means friends cannot see your data
  */
-export async function makeFitnessDataPrivate({ podUrl, friendsList, fetch }) {
+export async function makeFitnessDataPrivate({ podUrl, friendsList, fetch, onProgress }) {
   const root = rootPodUrl(podUrl);
   const containerUrl = `${root}/private/fitness/`;
 
@@ -146,7 +152,13 @@ export async function makeFitnessDataPrivate({ podUrl, friendsList, fetch }) {
   let successCount = 0;
 
   // Revoke access from each friend
-  for (const friendWebId of friendsList) {
+  for (let i = 0; i < friendsList.length; i++) {
+    const friendWebId = friendsList[i];
+
+    if (onProgress) {
+      onProgress({ current: i + 1, total: friendsList.length, friendWebId });
+    }
+
     try {
       const agents = agentVariants(friendWebId);
 
@@ -180,7 +192,7 @@ export async function makeFitnessDataPrivate({ podUrl, friendsList, fetch }) {
       }
 
       successCount++;
-      console.log(`[Permissions] Revoked access from friend: ${friendWebId}`);
+      console.log(`[Permissions] Revoked access from friend ${i + 1}/${friendsList.length}: ${friendWebId}`);
     } catch (e) {
       console.error(`[Permissions] Failed to revoke from ${friendWebId}:`, e);
     }
