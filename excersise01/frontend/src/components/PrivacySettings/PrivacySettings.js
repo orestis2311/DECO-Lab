@@ -6,6 +6,7 @@ import {
   makeFitnessDataPrivate,
   isFitnessDataPublic,
 } from "../../services/Permissions";
+import { getFriends } from "../../services/Friends";
 import {
   diagnoseAccessControl,
   testAnonymousAccess,
@@ -17,19 +18,27 @@ export default function PrivacySettings({ podUrl, solidFetch }) {
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [error, setError] = useState(null);
+  const [friends, setFriends] = useState([]);
   const [diagnostics, setDiagnostics] = useState(null);
   const [showDiagnostics, setShowDiagnostics] = useState(false);
   const [anonymousTest, setAnonymousTest] = useState(null);
 
-  // Check current visibility status on mount
+  // Load friends list and check current visibility status
   useEffect(() => {
     let alive = true;
     (async () => {
       try {
         if (!podUrl || !solidFetch) return;
         setLoading(true);
+
+        // Load friends list
+        const friendsList = await getFriends({ podUrl, fetch: solidFetch });
+        if (alive) setFriends(friendsList);
+
+        // Check if data is shared with friends
         const publicStatus = await isFitnessDataPublic({
           podUrl,
+          friendsList,
           fetch: solidFetch,
         });
         if (alive) setIsPublic(publicStatus);
@@ -73,33 +82,37 @@ export default function PrivacySettings({ podUrl, solidFetch }) {
     }
   };
 
-  // Toggle visibility handler
+  // Toggle visibility handler (friend-based sharing)
   const handleToggle = async () => {
     try {
       setUpdating(true);
       setError(null);
       setAnonymousTest(null);
 
+      if (friends.length === 0) {
+        setError("You have no friends added yet. Add friends first to share your data.");
+        setUpdating(false);
+        return;
+      }
+
       if (isPublic) {
-        // Switch to private
-        await makeFitnessDataPrivate({ podUrl, fetch: solidFetch });
+        // Switch to private (revoke access from friends)
+        const result = await makeFitnessDataPrivate({
+          podUrl,
+          friendsList: friends,
+          fetch: solidFetch,
+        });
         setIsPublic(false);
-        console.log("[PrivacySettings] Data is now private");
+        console.log(`[PrivacySettings] Data is now private (revoked from ${result.revokedFrom} friends)`);
       } else {
-        // Switch to public
-        await makeFitnessDataPublic({ podUrl, fetch: solidFetch });
+        // Switch to public (grant access to friends)
+        const result = await makeFitnessDataPublic({
+          podUrl,
+          friendsList: friends,
+          fetch: solidFetch,
+        });
         setIsPublic(true);
-        console.log("[PrivacySettings] Data is now public");
-
-        // After setting public, test if it's actually accessible
-        const root = podUrl.trim().replace(/\/+$/, "").replace(/\/(public|private)(\/.*)?$/i, "");
-        const containerUrl = `${root}/private/fitness/`;
-        const anonTest = await testAnonymousAccess(containerUrl);
-        setAnonymousTest(anonTest);
-
-        if (anonTest.requiresAuth) {
-          setError("WARNING: Data marked as public but still requires authentication. Your pod provider (iGrant.io) may require login for all access.");
-        }
+        console.log(`[PrivacySettings] Data is now public (shared with ${result.sharedWith} friends)`);
       }
     } catch (e) {
       console.error("[PrivacySettings] Error toggling visibility:", e);
@@ -126,26 +139,32 @@ export default function PrivacySettings({ podUrl, solidFetch }) {
         <div className="privacy-info">
           <div className="privacy-status">
             <span className={`status-indicator ${isPublic ? "public" : "private"}`}>
-              {isPublic ? "🌐 Public" : "🔒 Private"}
+              {isPublic ? "👥 Shared with Friends" : "🔒 Private"}
+            </span>
+            <span className="friends-count">
+              ({friends.length} friend{friends.length !== 1 ? "s" : ""})
             </span>
           </div>
           <p className="privacy-description">
             {isPublic
-              ? "Your fitness data is publicly accessible. Anyone with the link can view your activities."
-              : "Your fitness data is private. Only you and friends you've shared with can see your activities."}
+              ? `Your fitness data is shared with ${friends.length} friend${friends.length !== 1 ? "s" : ""}. They can view your activities.`
+              : friends.length > 0
+              ? `Your fitness data is private. Your ${friends.length} friend${friends.length !== 1 ? "s" : ""} cannot see your activities.`
+              : "Your fitness data is private. Add friends to share your activities with them."}
           </p>
         </div>
 
         <button
           className={`toggle-button ${isPublic ? "public" : "private"}`}
           onClick={handleToggle}
-          disabled={updating}
+          disabled={updating || friends.length === 0}
+          title={friends.length === 0 ? "Add friends first to share your data" : ""}
         >
           {updating
             ? "Updating..."
             : isPublic
-            ? "Make Private"
-            : "Make Public"}
+            ? "Stop Sharing with Friends"
+            : "Share with Friends"}
         </button>
       </div>
 
@@ -225,12 +244,17 @@ export default function PrivacySettings({ podUrl, solidFetch }) {
       )}
 
       <div className="privacy-warning">
-        <strong>Note:</strong> Making your data public will allow anyone to view
-        your fitness activities, including workout details, routes, and statistics.
-        <br /><br />
-        <strong>iGrant.io users:</strong> Your pod provider may require authentication
-        for all access, even when data is marked as "public". Use the diagnostics
-        button above to test if anonymous access works.
+        <strong>How it works:</strong>
+        <ul>
+          <li><strong>Private:</strong> Only you can see your fitness data. Your friends cannot access it.</li>
+          <li><strong>Shared with Friends:</strong> All your friends can see your fitness activities, including workout details, routes, and statistics.</li>
+        </ul>
+        <br />
+        {friends.length === 0 && (
+          <div className="no-friends-notice">
+            ⚠️ You don't have any friends added yet. Go to the Friends panel to add friends before sharing your data.
+          </div>
+        )}
       </div>
     </div>
   );

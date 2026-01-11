@@ -69,99 +69,158 @@ export async function grantFitnessReadToFriend({ podUrl, friendWebId, fetch }) {
 }
 
 /**
- * Make fitness data publicly accessible (anyone can read)
+ * Grant fitness data access to ALL friends
+ * "Public" in this context means "visible to friends"
  */
-export async function makeFitnessDataPublic({ podUrl, fetch }) {
+export async function makeFitnessDataPublic({ podUrl, friendsList, fetch }) {
   const root = rootPodUrl(podUrl);
   const containerUrl = `${root}/private/fitness/`;
 
-  // 1) Set public access on the container itself
-  await universalAccess.setPublicAccess(
-    containerUrl,
-    { read: true, write: false, append: false, control: false },
-    { fetch }
-  );
-
-  console.log("[Permissions] Made container public:", containerUrl);
-
-  // 2) Set public access on all files inside
-  try {
-    const containerDs = await getSolidDataset(containerUrl, { fetch });
-    const contained = getContainedResourceUrlAll(containerDs);
-
-    console.log("[Permissions] Making files public:", contained);
-
-    for (const fileUrl of contained) {
-      await universalAccess.setPublicAccess(
-        fileUrl,
-        { read: true, write: false, append: false, control: false },
-        { fetch }
-      );
-    }
-
-    console.log("[Permissions] All files are now public");
-  } catch (e) {
-    console.warn(
-      "[Permissions] Could not set public access on files. Error:",
-      e
-    );
-    throw e;
+  if (!friendsList || friendsList.length === 0) {
+    console.log("[Permissions] No friends to share with");
+    return { success: true, sharedWith: 0 };
   }
+
+  console.log(`[Permissions] Sharing with ${friendsList.length} friends`);
+  let successCount = 0;
+
+  // Grant access to each friend
+  for (const friendWebId of friendsList) {
+    try {
+      const agents = agentVariants(friendWebId);
+
+      // Share the container
+      for (const agent of agents) {
+        await universalAccess.setAgentAccess(
+          containerUrl,
+          agent,
+          { read: true, write: false, append: false, control: false },
+          { fetch }
+        );
+      }
+
+      // Share all files inside
+      try {
+        const containerDs = await getSolidDataset(containerUrl, { fetch });
+        const contained = getContainedResourceUrlAll(containerDs);
+
+        for (const fileUrl of contained) {
+          for (const agent of agents) {
+            await universalAccess.setAgentAccess(
+              fileUrl,
+              agent,
+              { read: true, write: false, append: false, control: false },
+              { fetch }
+            );
+          }
+        }
+      } catch (e) {
+        console.warn(`[Permissions] Could not share files with ${friendWebId}:`, e);
+      }
+
+      successCount++;
+      console.log(`[Permissions] Shared with friend: ${friendWebId}`);
+    } catch (e) {
+      console.error(`[Permissions] Failed to share with ${friendWebId}:`, e);
+    }
+  }
+
+  console.log(`[Permissions] Data is now public (shared with ${successCount}/${friendsList.length} friends)`);
+  return { success: true, sharedWith: successCount };
 }
 
 /**
- * Make fitness data private (remove public access)
+ * Revoke fitness data access from ALL friends
+ * "Private" means friends cannot see your data
  */
-export async function makeFitnessDataPrivate({ podUrl, fetch }) {
+export async function makeFitnessDataPrivate({ podUrl, friendsList, fetch }) {
   const root = rootPodUrl(podUrl);
   const containerUrl = `${root}/private/fitness/`;
 
-  // 1) Remove public access from the container
-  await universalAccess.setPublicAccess(
-    containerUrl,
-    { read: false, write: false, append: false, control: false },
-    { fetch }
-  );
-
-  console.log("[Permissions] Made container private:", containerUrl);
-
-  // 2) Remove public access from all files inside
-  try {
-    const containerDs = await getSolidDataset(containerUrl, { fetch });
-    const contained = getContainedResourceUrlAll(containerDs);
-
-    console.log("[Permissions] Making files private:", contained);
-
-    for (const fileUrl of contained) {
-      await universalAccess.setPublicAccess(
-        fileUrl,
-        { read: false, write: false, append: false, control: false },
-        { fetch }
-      );
-    }
-
-    console.log("[Permissions] All files are now private");
-  } catch (e) {
-    console.warn(
-      "[Permissions] Could not remove public access from files. Error:",
-      e
-    );
-    throw e;
+  if (!friendsList || friendsList.length === 0) {
+    console.log("[Permissions] No friends to revoke from");
+    return { success: true, revokedFrom: 0 };
   }
+
+  console.log(`[Permissions] Revoking access from ${friendsList.length} friends`);
+  let successCount = 0;
+
+  // Revoke access from each friend
+  for (const friendWebId of friendsList) {
+    try {
+      const agents = agentVariants(friendWebId);
+
+      // Revoke container access
+      for (const agent of agents) {
+        await universalAccess.setAgentAccess(
+          containerUrl,
+          agent,
+          { read: false, write: false, append: false, control: false },
+          { fetch }
+        );
+      }
+
+      // Revoke access from all files
+      try {
+        const containerDs = await getSolidDataset(containerUrl, { fetch });
+        const contained = getContainedResourceUrlAll(containerDs);
+
+        for (const fileUrl of contained) {
+          for (const agent of agents) {
+            await universalAccess.setAgentAccess(
+              fileUrl,
+              agent,
+              { read: false, write: false, append: false, control: false },
+              { fetch }
+            );
+          }
+        }
+      } catch (e) {
+        console.warn(`[Permissions] Could not revoke file access from ${friendWebId}:`, e);
+      }
+
+      successCount++;
+      console.log(`[Permissions] Revoked access from friend: ${friendWebId}`);
+    } catch (e) {
+      console.error(`[Permissions] Failed to revoke from ${friendWebId}:`, e);
+    }
+  }
+
+  console.log(`[Permissions] Data is now private (revoked from ${successCount}/${friendsList.length} friends)`);
+  return { success: true, revokedFrom: successCount };
 }
 
 /**
- * Check if fitness data is currently public
+ * Check if fitness data is shared with friends
+ * Checks if at least one friend has read access
  */
-export async function isFitnessDataPublic({ podUrl, fetch }) {
+export async function isFitnessDataPublic({ podUrl, friendsList, fetch }) {
   const root = rootPodUrl(podUrl);
   const containerUrl = `${root}/private/fitness/`;
 
+  if (!friendsList || friendsList.length === 0) {
+    return false; // No friends, so not public
+  }
+
   try {
-    const access = await universalAccess.getPublicAccess(containerUrl, { fetch });
-    return access?.read === true;
+    // Check if first friend has access
+    const firstFriend = friendsList[0];
+    const agents = agentVariants(firstFriend);
+
+    for (const agent of agents) {
+      try {
+        const access = await universalAccess.getAgentAccess(containerUrl, agent, { fetch });
+        if (access?.read === true) {
+          return true; // At least one friend has access
+        }
+      } catch (e) {
+        // Continue checking
+      }
+    }
+
+    return false;
   } catch (e) {
-    console.warn("[Permissions] Could not check public access. Error:", e);
+    console.warn("[Permissions] Could not check friend access. Error:", e);
     return false;
   }
 }
